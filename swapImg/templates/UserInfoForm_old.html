@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>StoryBook</title>
+    <style>
+        form{
+            width: 300px;
+            
+        }
+
+        label{
+            user-select: none;
+        }
+
+        p{
+            display: flex;align-items: flex-start;
+            justify-content: space-between;
+        }
+        video{
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+        }
+        
+    </style>
+</head>
+<body>
+    <form id="image-capture-form" method = "post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <p>
+
+            <div class="form-item">
+                <label for="toggle-checkbox">Enable Camera Capture</label>
+                <input type="checkbox" id="toggle-checkbox">
+            </div>
+            <div class="form-item" id="camera-container" style="display: none;">
+                <label for="liveCapture">Live Img</label>
+                <p>
+                    <video id="camera-preview" autoplay playsinline></video>
+                </p>
+                <button id="capture-button">Capture</button>
+                <div id="media-link" style="display: none;">
+                    <a id="media-download-link" href="#" download>Download Captured Media</a>
+                </div>
+            </div>
+        </p>
+        <button type="submit">Upload</button>
+    </form>
+    <script>
+        const captureForm = document.getElementById('image-capture-form');
+        const video = document.getElementById('camera-preview');
+        const captureButton = document.getElementById('capture-button');
+        const toggleCheckbox = document.getElementById('toggle-checkbox');
+        const cameraContainer = document.getElementById('camera-container');
+        
+
+        toggleCheckbox.addEventListener('change', () => {
+            if (toggleCheckbox.checked) {
+                // Show the camera container and start capturing
+                cameraContainer.style.display = 'block';
+
+                // Access the user's camera
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then((stream) => {
+                        video.srcObject = stream;
+                    })
+                    .catch((error) => {
+                        console.error('Error accessing camera:', error);
+                    });
+            } else {
+                // Hide the camera container and stop capturing
+                cameraContainer.style.display = 'none';
+
+                // Stop the camera stream
+                const stream = video.srcObject;
+                if (stream) {
+                    const tracks = stream.getTracks();
+                    tracks.forEach(track => track.stop());
+                    video.srcObject = null;
+                }
+            }
+        });
+        
+    
+        captureButton.addEventListener('click', () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+            canvas.toBlob((blob) => {
+                const formData = new FormData(captureForm);
+                formData.append('capture', blob);
+                fetch('', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                }).then((response) => {
+                    if (response.ok) {
+                        document.getElementById('media-link').style.display = 'block';
+                        // Generate and set the media link URL
+                        const mediaLink = document.getElementById('media-download-link');
+                        // mediaLink.href = URL.createObjectURL(blob);
+                        document.getElementById('id_userAvatar').files = URL.createObjectURL(blob)
+                        mediaLink.download = 'captured_media.png';
+                        alert('Media captured and uploaded successfully.');
+                    } else {
+                        alert('Failed to upload media.');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

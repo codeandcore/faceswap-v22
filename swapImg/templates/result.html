@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Face Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .image-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            margin-right: 10px;
+        }
+        .generated-faces {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .generated-face {
+            margin: 10px;
+        }
+        .generated-face img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Anime Face Generator</h1>
+
+    <div class="image-container">
+        <div>
+            <h2>Original Image</h2>
+            <img src="{{ original_image.url }}" alt="Original Image">
+        </div>
+    </div>
+
+    <div class="generated-faces">
+        {% for face in generated_faces %}
+            <div class="generated-face">
+                <h2>Generated Face</h2>
+                <img src="{{ face.url }}" alt="Generated Face">
+            </div>
+        {% endfor %}
+    </div>
+
+</body>
+</html>
